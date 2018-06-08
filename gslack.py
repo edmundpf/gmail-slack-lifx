@@ -7,21 +7,299 @@ import time
 import imaplib
 import email
 import logging
+from pifx import PIFX
 from time import strftime
+from slackclient import SlackClient
 
 #...GLOBALS...
 
 SERVER = "imap.gmail.com"
 SERVER2 = "imap.buffalo.edu"
 
+#UID Data Collection
+
 global UNIQUES, OLD_UNIQUES
+
+#API Keys
+
+global SLACK_KEY, LIFX_KEY
 
 #Colors
 
 black = "\033[0;39;49m"
 black_bold = "\033[1;39;49m"
 
+COLORS = ["#EC7063", "#AF7AC5", "#5499C7", "#48C9B0", 
+		"#52BE80", "#F4D03F", "#EB984E", "#EC7063",
+		"#A569BD", "#5DADE2", "#45B39D", "#58D68D",
+		"#F5B041", "#DC7633"]
+
 #...DEFINITIONS...
+
+#.................
+#......SLACK......
+#.................
+
+#Custom slack message
+
+def slack_custom(message, color, _channel="#general", _att=False):
+
+	global SLACK_KEY
+
+	try:
+
+		print(black_bold + "\nAttempting to message updates in Slack...\n" + black)
+
+		slack_token = SLACK_KEY
+		sc = SlackClient(slack_token)
+
+		if color == "Green" or color == "green":
+
+			att_json = [
+					{
+						"fallback": "Lemur - Message.",
+						"color": "#45e33a",
+						"actions": [
+							{
+								"type": "button",
+								"text": "Check Accounts Data :full_moon_with_face:",
+								"url": "https://docs.google.com/spreadsheets/d/1rRsCLRcgtDEpFeC8jUZ2mWC39eEd1BHzhtOxLg0MnBY/edit?usp=sharing"
+							}
+
+						]
+
+					}
+
+				]
+
+		elif color == "Red" or color == "red":
+
+			att_json = [
+					{
+						"fallback": "Lemur - Message.",
+						"color": "#e52424",
+						"actions": [
+							{
+								"type": "button",
+								"text": "Check Accounts Data :full_moon_with_face:",
+								"url": "https://docs.google.com/spreadsheets/d/1rRsCLRcgtDEpFeC8jUZ2mWC39eEd1BHzhtOxLg0MnBY/edit?usp=sharing"
+							}
+
+						]
+
+					}
+
+				]
+
+		if _att == True:
+
+			sc.api_call(
+				"chat.postMessage",
+				channel=_channel,
+				text=message,
+				attachments=att_json
+			)
+
+		elif _att == False:
+
+			sc.api_call(
+				"chat.postMessage",
+				channel=_channel,
+				text=message
+			)
+
+		print("Slack message sent!!!")
+
+		return 1
+
+	except:
+		print("Could not send slack message!!!")
+		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "Could not send slack message!!!")
+		return 0
+
+#Slack custom attachment
+
+def slack_att_custom(_att, message=None, _channel="#general"):
+
+	global SLACK_KEY
+
+	try:
+
+		print(black_bold + "\nAttempting to message updates in Slack...\n" + black)
+
+		slack_token = SLACK_KEY
+		sc = SlackClient(slack_token)
+
+		if message == None:
+
+			sc.api_call(
+				"chat.postMessage",
+				channel=_channel,
+				attachments=_att
+			)
+
+		elif message != None:
+
+			sc.api_call(
+				"chat.postMessage",
+				channel=_channel,
+				text=message,
+				attachments=_att
+			)
+
+		print("Slack attachment message sent!!!")
+
+		return 1
+
+	except:
+		print("Could not send slack attachment message!!!")
+		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "Could not send slack attachment message!!!")
+		return 0
+
+#Slack miniature attachment
+
+def slack_mini_att(title, message, _channel="#general", _color="green"):
+
+	global SLACK_KEY
+
+	if _color == "green":
+		color_val = "#45e33a"
+	if _color == "red":
+		color_val = "#e52424"
+	else:
+		color_val = _color
+
+	try:
+
+		print(black_bold + "\nAttempting to message updates in Slack...\n" + black)
+
+		slack_token = SLACK_KEY
+		sc = SlackClient(slack_token)
+
+		att_json = [
+			{
+				"fallback": "Lemur - Message.",
+				"color": color_val,
+				"fields": [
+					{
+						"title": str(title),
+						"value": str(message)
+					}
+				],
+				"ts": str(int(time.time()))
+			}
+		]
+
+		sc.api_call(
+			"chat.postMessage",
+			channel=_channel,
+			attachments=att_json
+		)
+
+		print("Slack mini attachment message sent!!!")
+
+		return 1
+
+	except:
+		print("Could not send slack mini attachment message!!!")
+		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "Could not send slack mini attachment message!!!")
+		return 0
+
+#Slack miniature image attachment
+
+def slack_mini_img_att(title, message, image, _channel="#general", _color="green"):
+
+	global SLACK_KEY
+
+	if _color == "green":
+		color_val = "#45e33a"
+	if _color == "red":
+		color_val = "#e52424"
+	try:
+
+		print(black_bold + "\nAttempting to message updates in Slack...\n" + black)
+
+		slack_token = SLACK_KEY
+		sc = SlackClient(slack_token)
+
+		att_json = [
+			{
+				"fallback": "Lemur - Message.",
+				"color": color_val,
+				"image_url": image,
+				"fields": [
+					{
+						"title": str(title),
+						"value": str(message)
+					}
+				],
+				"ts": str(int(time.time()))
+			}
+		]
+
+		sc.api_call(
+			"chat.postMessage",
+			channel=_channel,
+			attachments=att_json
+		)
+
+		print("Slack mini image attachment message sent!!!")
+
+		return 1
+
+	except:
+		print("Could not send slack mini image attachment message!!!")
+		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "Could not send slack mini image attachment message!!!")
+		return 0
+
+#Default Email Attachment Message
+
+def email_attachment(_EMAIL, _COLOR, _FROM, _MSG):
+
+	_attach = [
+		{
+			"fallback": "Lemur - Message",
+			"color": _COLOR,
+			"title": _EMAIL + ": New Email",
+			"fields": [
+				{
+					"title": "From: " + _FROM,
+					"value": _MSG
+				}
+			],
+			"ts": str(int(time.time()))
+		}
+	]
+
+	slack_att_custom(_attach, None, "#email")
+
+#.................
+#......LIFX.......
+#.................
+
+def lifx_notify(_COLOR, _EMAIL):
+
+	global LIFX_KEY
+
+	try:
+
+		print(black_bold + "\nAttempting to send Lifx Notification...\n" + black)
+
+		p = PIFX(api_key=LIFX_KEY)
+		p.pulse_lights(color='red', cycles=3.0)
+
+		slack_mini_att(_EMAIL, "Lifx New Email Notification was successful! :yum:", "#lifx_lights", _COLOR)
+
+		print("SUCCESS: Lifx state changed successfully!!!")
+
+	except:
+		print("Could not modify Lifx state!!!")
+		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "Could not modify Lifx state!!!")
+		return 0
+
+#.................
+#......GMAIL......
+#.................
 
 #Recursive add Email Function
 
@@ -111,8 +389,8 @@ def fetch_creds():
 				emails.append(row)
 		csvfile.close()
 
-		for i in range(0, len(emails)):
-			print(emails[i][0] + " || " + emails[i][1])
+		# for i in range(0, len(emails)):
+		# 	print(emails[i][0] + " || " + emails[i][1])
 
 		print("\nSUCCESS: Fetched emails from data file!!!")
 		return emails
@@ -127,6 +405,8 @@ def fetch_creds():
 def initialize():
 
 	print(black_bold + "Gmail for Slack and Lifx" + black)
+	fetch_keys()
+	fetch_uids()
 	return 1
 
 #Verify Data Structure
@@ -176,6 +456,11 @@ def data_collection():
 			print("UIDS.csv file created...")
 			check = 1
 
+		if not os.path.isfile("DATA/KEYS.csv"):
+			os.mknod("DATA/KEYS.csv")
+			print("KEYS.csv file created...")
+			check = 1
+
 		if check == 1:
 			print("")
 
@@ -185,6 +470,58 @@ def data_collection():
 	except:
 		print("\nFAILURE: Could not verify data structure!!!")
 		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "FAILURE: Could not verify data structure!!!")
+		return 0
+
+#Get API Keys
+
+def fetch_keys():
+
+	global SLACK_KEY, LIFX_KEY
+
+	print(black_bold + "\nAttempting to fetch Slack and Lifx API Keys...\n" + black)
+
+	try:
+
+		keys = []
+
+		with open("DATA/KEYS.csv") as csvfile:
+			my_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+			for row in my_reader:
+				keys.append(row)
+		csvfile.close()
+
+		if len(keys) >=2:
+
+			#Get Slack Key
+
+			if keys[0][0] == "SLACK":
+
+				SLACK_KEY = keys[0][1]
+
+			elif keys[1][0] == "SLACK":
+
+				SLACK_KEY = keys[1][1]
+
+			print("SLACK KEY: " + SLACK_KEY)
+
+			#Get Lifx Key
+
+			if keys[0][0] == "LIFX":
+
+				LIFX_KEY = keys[0][1]
+
+			elif keys[1][0] == "LIFX":
+
+				LIFX_KEY = keys[1][1]
+
+			print("LIFX KEY: " + LIFX_KEY)
+
+		print("\nSUCCESS: Fetched Slack and Lifx API Keys!!!")
+		return 1
+
+	except:
+		print("\nFAILURE: Could not fetch API Keys!!!")
+		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "FAILURE: Could not fetch API Keys!!!")
 		return 0
 
 #Get UIDS
@@ -201,11 +538,10 @@ def fetch_uids():
 		with open("DATA/UIDS.csv") as csvfile:
 			my_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 			for row in my_reader:
+				row2 = row[:]
 				UNIQUES.append(row)
-				OLD_UNIQUES.append(row)
+				OLD_UNIQUES.append(row2)
 		csvfile.close()
-
-		print(len(UNIQUES))
 
 		return 1
 
@@ -216,7 +552,7 @@ def fetch_uids():
 
 #Fetch Most Recent Email in Plain Text
 
-def fetch_gmail(_EMAIL, _PASS):
+def fetch_gmail(_EMAIL, _PASS, _itt=0):
 
 	global UNIQUES
 
@@ -225,6 +561,7 @@ def fetch_gmail(_EMAIL, _PASS):
 		print(black_bold + "\nAttempting to fetch latest email from " + str(_EMAIL) + "...\n" + black)
 
 		new_email = 0
+		MSG = ""
 
 		#Get Past UID's
 
@@ -282,7 +619,8 @@ def fetch_gmail(_EMAIL, _PASS):
 		#Print Latest Email Stats
 
 		msg = email.message_from_bytes(raw_email)
-		print("FROM: " + str(msg['From']))
+		FROM = str(msg['From'])
+		print("FROM: " + FROM)
 		print("TO: " + str(msg['To']) + "\n")
 
 		#Print Email Body
@@ -305,7 +643,8 @@ def fetch_gmail(_EMAIL, _PASS):
 
 						if rec_part.get_content_maintype() == 'text':
 
-							print(str(rec_part.get_payload()))
+							MSG = str(rec_part.get_payload())
+							print(MSG)
 							break
 
 				#Check for Text Message
@@ -314,20 +653,27 @@ def fetch_gmail(_EMAIL, _PASS):
 
 					#Print Text and Break
 
-					print(str(part.get_payload()))
+					MSG = str(part.get_payload())
+					print(MSG)
 					break
 
 		#Print Text Message
 
 		elif maintype == 'text':
 
-			print(str(msg.get_payload()))
+			MSG = str(msg.get_payload())
+			print(MSG)
 
 		#Print ERROR if text part cannot be found
 
 		else:
 
-			print("ERROR: Preview not Available...")
+			MSG = "ERROR: Preview not Available..."
+			print(MSG)
+
+		if new_email == 1:
+			email_attachment(_EMAIL, COLORS[_itt % 14], FROM, MSG)
+			lifx_notify(COLORS[_itt % 14], _EMAIL)
 
 		print("\nSUCCESS: Fetched latest email!!!")
 		return 1
@@ -341,21 +687,25 @@ def fetch_gmail(_EMAIL, _PASS):
 
 def sync_uids():
 
+	global UNIQUES, OLD_UNIQUES
+
 	try:
 
 		print(black_bold + "\nAttempting to sync UIDS.csv file with UNIQUES list...\n" + black)
 
-		global UNIQUES, OLD_UNIQUES
-
 		if len(UNIQUES) > 0:
+			
 			if UNIQUES != OLD_UNIQUES:
 
-				with open(("DATA/UIDS.csv"), "a", newline='') as f:
+				with open(("DATA/UIDS.csv"), "w", newline='') as f:
 					writer = csv.writer(f)
-					writer.writerows([UNIQUES[i]])
+					for i in range(0, len(UNIQUES)):
+						writer.writerows([UNIQUES[i]])
 				f.close()
 				print("SUCCESS: UIDS.csv synced!!!")
+
 			else:
+
 				print("SUCCESS: UIDS.csv had no changes!!!")
 
 		return 1
@@ -364,17 +714,20 @@ def sync_uids():
 		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "FAILURE: Could not sync UIDS.csv with UNIQUES list!!!")
 		return 0
 
+#Fetch Most Recent Email from all Gmail Accounts
+
+def fetch_all():
+
+	emails = fetch_creds()
+	for i in range(0, len(emails)):
+		fetch_gmail(emails[i][0], emails[i][1], i)
+	sync_uids()
+
 #...LOGIC...
 
-initialize()
-data_collection()
-fetch_uids()
+# initialize()
+# fetch_all()
+# data_collection()
 # add_accounts()
-emails = fetch_creds()
-for i in range(0, len(emails)):
-	fetch_gmail(emails[i][0], emails[i][1])
-sync_uids()
 
 #...END PROGRAM...
-
-
