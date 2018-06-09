@@ -35,9 +35,9 @@
      - `slack_att_custom(_attach, None, "#your_channel_here")`
      
 ## Gmail Setup
-1. You may receive IMAP authentification errors for your accounts due to Google Security Settings if you run this on an external server and not your usual IP address. To fix these errors:
+1. You may receive IMAP authentification errors for your accounts due to Google Security Settings. To fix these errors:
    - Make sure IMAP is enabled for your Gmail accounts
-   - Allow less secure apps for your account https://myaccount.google.com/lesssecureapps
+   - Allow less secure apps for your account at https://myaccount.google.com/lesssecureapps
    - You will most likely get an email about a *blocked signin attempt* from Google:
      - If so, go to https://myaccount.google.com/u/0/device-activity and verify the device for your account
    - After your device has been verified by Google and less secure apps are allowed for your account, you'll be able to login via IMAP using the script
