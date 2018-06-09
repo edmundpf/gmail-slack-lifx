@@ -1,0 +1,2 @@
+pifx==1.0.1
+slackclient==1.2.1
