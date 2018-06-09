@@ -602,10 +602,10 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 		elif _EMAIL in _emails:
 
 			if _uids[_emails.index(_EMAIL)] == uid:
-				print("No new emails!!!")
+				print("No new emails!!!\n")
 
 			elif _uids[_emails.index(_EMAIL)] != uid:
-				print("New email found!!!")
+				print("New email found!!!\n")
 				new_email = 1
 				UNIQUES[_emails.index(_EMAIL)][1] = uid
 
@@ -620,9 +620,11 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 
 		msg = email.message_from_bytes(raw_email)
 		FROM = str(msg['From'])
+		SUBJECT = str(msg['SUBJECT'])
+		print("TO: " + str(msg['To']))
 		print("FROM: " + FROM)
-		print("TO: " + str(msg['To']) + "\n")
-
+		print("SUBJECT: " + SUBJECT + "\n")
+		
 		#Print Email Body
 
 		maintype = msg.get_content_maintype()
@@ -644,7 +646,7 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 						if rec_part.get_content_maintype() == 'text':
 
 							MSG = str(rec_part.get_payload())
-							print(MSG)
+							msg_condense(MSG)
 							break
 
 				#Check for Text Message
@@ -654,7 +656,7 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 					#Print Text and Break
 
 					MSG = str(part.get_payload())
-					print(MSG)
+					msg_condense(MSG)
 					break
 
 		#Print Text Message
@@ -662,7 +664,7 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 		elif maintype == 'text':
 
 			MSG = str(msg.get_payload())
-			print(MSG)
+			msg_condense(MSG)
 
 		#Print ERROR if text part cannot be found
 
@@ -672,7 +674,7 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 			print(MSG)
 
 		if new_email == 1:
-			email_attachment(_EMAIL, COLORS[_itt % 14], FROM, MSG)
+			email_attachment(_EMAIL, COLORS[_itt % 14], FROM, SUBJECT)
 			lifx_notify(COLORS[_itt % 14], _EMAIL)
 
 		print("\nSUCCESS: Fetched latest email!!!")
@@ -682,6 +684,28 @@ def fetch_gmail(_EMAIL, _PASS, _itt=0):
 		print("\nFAILURE: Could not read latest email!!!")
 		logging.exception(strftime("%m/%d/%Y %H:%M:%S ") + "FAILURE: Could not read email!!!")
 		return 0
+
+#Print first five lines of long messages
+
+def msg_condense(_MSG):
+
+	if _MSG.count('\n') > 5:
+
+		lines = _MSG.splitlines()
+
+		for i in range(0, 5):
+
+			if i < 4:
+
+				print(lines[i])
+
+			if i == 4:
+
+				print(lines[i] + "...")
+
+	elif _MSG.count('\n') <= 5:
+
+		print(_MSG)
 
 #Sync UID File Changes
 
